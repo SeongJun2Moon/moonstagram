@@ -3,16 +3,26 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/rendering.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 //프로젝트 내 패키지
 import 'package:moonstagram/style.dart' as style;
 import 'package:moonstagram/widgets/home.dart';
+import 'package:moonstagram/widgets/uproad.dart';
 
 void main() {
   runApp(MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: style.mainTheme,
-      home: MyApp()));
+      // initialRoute: '/',
+      // routes: {
+      //   '/' : (c) => Home(),
+      //   '/detail' : (c) => Upload(),
+      // },
+      home: MyApp()
+
+  ));
 }
 
 class MyApp extends StatefulWidget {
@@ -26,11 +36,21 @@ class _MyAppState extends State<MyApp> {
 
   var tab = 0;
   var data = [];
+  var userImage;
+  var title;
 
   getData()async{
     var result = await http.get(Uri.parse('https://codingapple1.github.io/app/data.json'));
     var result2 = jsonDecode(result.body);
-    print(result2[0]['id']);
+
+    
+    //스테이터스코드로 예외처리
+    if (result.statusCode == 200) {
+      print("데이터 가져옴");
+    } else {
+      print("데이터 못가져옴");
+    }
+
     setState(() {
       data = result2;
     });
@@ -54,7 +74,20 @@ class _MyAppState extends State<MyApp> {
           actions: [
             IconButton(
               icon: Icon(Icons.add_box_outlined),
-              onPressed: (){},
+              onPressed: () async {
+                var picker = ImagePicker();
+                var image = await picker.pickImage(source: ImageSource.gallery);
+
+                if (image != null) {
+                  setState(() {
+                    userImage = File(image.path);
+                  });
+                }
+
+                Navigator.push(context,
+                  MaterialPageRoute(builder:(c) => Upload(userImage : userImage, title : title))
+                );
+              },
             )
           ],
         ),
